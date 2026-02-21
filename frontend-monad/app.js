@@ -102,12 +102,17 @@ async function loadStats() {
     try {
         const count = await contract.anchorCount();
         document.getElementById('totalAnchors').textContent = count.toString();
-
-        const events = await getAnchoredEvents();
-        const groups = new Set(events.map(e => e.args.groupId));
-        document.getElementById('totalGroups').textContent = groups.size.toString();
-
         document.getElementById('networkStatus').textContent = 'Monad Testnet';
+
+        // Groups count from events (may fail with limited block range)
+        try {
+            const events = await getAnchoredEvents();
+            const groups = new Set(events.map(e => e.args.groupId));
+            document.getElementById('totalGroups').textContent = groups.size.toString();
+        } catch (evErr) {
+            console.warn('⚠️ Error cargando eventos:', evErr.message);
+            document.getElementById('totalGroups').textContent = '—';
+        }
     } catch (err) {
         console.error('Stats error:', err);
         document.getElementById('totalAnchors').textContent = '—';
@@ -119,7 +124,8 @@ async function loadStats() {
 // ===== Timeline =====
 async function getAnchoredEvents() {
     const latest = await provider.getBlockNumber();
-    const fromBlock = Math.max(0, latest - 500000);
+    // Monad limits block range for getLogs — use small window
+    const fromBlock = Math.max(0, latest - 2000);
     return contract.queryFilter(contract.filters.Anchored(), fromBlock, 'latest');
 }
 
