@@ -21,10 +21,10 @@ async function main() {
         const wa = new WhatsAppService();
         const handler = new MessageHandler(wa, sessionRepo, tandaService, ledger);
 
-        // Celo Anchor Service (non-blocking)
+        // Blockchain Anchor Service (non-blocking)
         const anchorService = new CeloAnchorService();
         ledger.setAnchorService(anchorService);
-        logger.info({ enabled: anchorService.isEnabled() }, 'Celo Anchor Service initialized');
+        logger.info({ enabled: anchorService.isEnabled() }, 'Anchor Service initialized');
 
         wa.onMessage(async (msg) => {
             await handler.handle(msg);
