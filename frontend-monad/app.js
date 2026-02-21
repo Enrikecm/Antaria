@@ -5,9 +5,9 @@
 let CONTRACT_ADDRESS = '0xB284Dd77dcdc080d7c5548592768A6E6188e5381';
 
 const RPC_ENDPOINTS = [
-    '/rpc',  // local proxy (bypasses CORS)
+    '/api/rpc',  // Vercel serverless proxy (production)
+    '/rpc',  // local proxy (dev with serve-monad.js)
     'https://testnet-rpc.monad.xyz',
-    'https://10143.rpc.thirdweb.com',
 ];
 const EXPLORER_TX = 'https://testnet.monadexplorer.com/tx/';
 const EXPLORER_ADDRESS = 'https://testnet.monadexplorer.com/address/';

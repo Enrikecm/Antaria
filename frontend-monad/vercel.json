@@ -1,0 +1,9 @@
+{
+    "rewrites": [
+        {
+            "source": "/api/rpc",
+            "destination": "/api/rpc"
+        }
+    ],
+    "outputDirectory": "frontend-monad"
+}
