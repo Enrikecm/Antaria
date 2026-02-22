@@ -43,7 +43,7 @@ export class LedgerRepository {
             ]
         );
 
-        // Hook: anchor key events on Celo (non-blocking)
+        // Hook: anchor key events on Monad (non-blocking)
         if (this.anchorService) {
             this.anchorService.processEvent({ ...event, id: eventUuid, timestamp }).catch((err: any) => {
                 logger.warn({ err }, 'Anchor failed (non-blocking)');

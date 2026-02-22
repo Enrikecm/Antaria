@@ -7,7 +7,7 @@ import { getDb } from './database';
 
 dotenv.config();
 
-const logger = pino({ name: 'infra/celo-anchor' });
+const logger = pino({ name: 'infra/anchor' });
 
 // Events that trigger on-chain anchoring
 const ANCHORABLE_EVENTS: Record<string, string> = {
@@ -20,18 +20,16 @@ const ANCHORABLE_EVENTS: Record<string, string> = {
     'RaffleWinnerSelected': 'RAFFLE_RESULT',
 };
 
-export class CeloAnchorService {
+export class AnchorService {
     private provider: JsonRpcProvider | null = null;
     private wallet: Wallet | null = null;
     private contract: Contract | null = null;
     private salt: string;
     private enabled: boolean;
-    private network: string;
 
     constructor() {
         this.salt = process.env.ANCHOR_SALT || 'antaria-v1-default-salt';
         this.enabled = process.env.ANCHOR_ENABLED === 'true';
-        this.network = process.env.ANCHOR_NETWORK || 'celo';
 
         if (this.enabled) {
             this.initializeConnection();
@@ -48,17 +46,8 @@ export class CeloAnchorService {
                 return;
             }
 
-            // Determine config file and RPC based on ANCHOR_NETWORK
-            let configFile: string;
-            let rpcUrl: string;
-
-            if (this.network === 'monad') {
-                configFile = './monad-config.json';
-                rpcUrl = 'https://testnet-rpc.monad.xyz';
-            } else {
-                configFile = './celo-config.json';
-                rpcUrl = 'https://alfajores-forno.celo-testnet.org'; // default Celo testnet
-            }
+            const configFile = './monad-config.json';
+            const rpcUrl = 'https://testnet-rpc.monad.xyz';
 
             if (!fs.existsSync(configFile)) {
                 logger.warn({ configFile }, 'Config file not found. Anchor service disabled.');
@@ -68,19 +57,12 @@ export class CeloAnchorService {
 
             const config = JSON.parse(fs.readFileSync(configFile, 'utf-8'));
 
-            // Override RPC from config if available, or use network-specific defaults
-            if (this.network === 'celo') {
-                rpcUrl = config.network === 'celo-alfajores'
-                    ? 'https://alfajores-forno.celo-testnet.org'
-                    : 'https://forno.celo.org';
-            }
-
-            this.provider = new JsonRpcProvider(rpcUrl, this.network === 'monad' ? 10143 : undefined);
+            this.provider = new JsonRpcProvider(rpcUrl, 10143);
             this.wallet = new Wallet(process.env.PRIVATE_KEY, this.provider);
             this.contract = new Contract(config.contractAddress, config.abi, this.wallet);
 
-            logger.info({ address: config.contractAddress, network: this.network, rpc: rpcUrl },
-                '🔗 AnchorService connected to AnchorRegistry');
+            logger.info({ address: config.contractAddress, network: 'monad-testnet', rpc: rpcUrl },
+                '🔗 AnchorService connected to AnchorRegistry on Monad');
         } catch (err) {
             logger.error({ err }, 'Failed to initialize AnchorService');
             this.enabled = false;
@@ -105,18 +87,15 @@ export class CeloAnchorService {
      * Compute privacy-safe hashes for on-chain anchoring
      */
     computeHashes(event: DomainEvent): { groupId: string; refId: string; dataHash: string } {
-        // groupId: hash the tandaId with salt for privacy
         const tandaId = event.tanda_id || 'no-tanda';
         const groupId = ethers.keccak256(
             ethers.toUtf8Bytes(tandaId + this.salt)
         );
 
-        // refId: hash the event ID
         const refId = ethers.keccak256(
             ethers.toUtf8Bytes((event.id || 'no-id') + this.salt)
         );
 
-        // dataHash: hash the relevant payload data
         const dataToHash = {
             type: event.type,
             timestamp: event.timestamp,
@@ -169,7 +148,7 @@ export class CeloAnchorService {
         const { groupId, refId, dataHash } = this.computeHashes(event);
 
         logger.info({ eventType: event.type, anchorType, tandaId: event.tanda_id },
-            'Anchoring event on-chain');
+            'Anchoring event on Monad');
 
         // Dry-run mode: log only, don't send TX
         if (!this.enabled || !this.contract) {
@@ -183,7 +162,7 @@ export class CeloAnchorService {
             return;
         }
 
-        // Live mode: send TX to AnchorRegistry
+        // Live mode: send TX to AnchorRegistry on Monad
         try {
             await this.recordAnchorLog(event.id || '', anchorType, groupId, dataHash, null, 'PENDING');
 
@@ -194,7 +173,7 @@ export class CeloAnchorService {
                 txHash: receipt.hash,
                 gasUsed: receipt.gasUsed.toString(),
                 anchorType,
-            }, '✅ Anchor TX confirmed');
+            }, '✅ Anchor TX confirmed on Monad');
 
             await this.recordAnchorLog(event.id || '', anchorType, groupId, dataHash, receipt.hash, 'CONFIRMED');
         } catch (err) {

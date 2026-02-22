@@ -6,7 +6,7 @@ import { LedgerRepository } from './infra/ledger';
 import { TandaService } from './domain/tanda-service';
 import { MessageHandler } from './app/message-handler';
 import { setupScheduler } from './app/scheduler';
-import { CeloAnchorService } from './infra/celo-anchor';
+import { AnchorService } from './infra/anchor';
 
 const logger = pino({ transport: { target: 'pino-pretty' } });
 
@@ -22,7 +22,7 @@ async function main() {
         const handler = new MessageHandler(wa, sessionRepo, tandaService, ledger);
 
         // Blockchain Anchor Service (non-blocking)
-        const anchorService = new CeloAnchorService();
+        const anchorService = new AnchorService();
         ledger.setAnchorService(anchorService);
         logger.info({ enabled: anchorService.isEnabled() }, 'Anchor Service initialized');
 

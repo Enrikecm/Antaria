@@ -84,7 +84,7 @@ async function initSchema(db: Database) {
         );
     `);
 
-    // Celo Anchor Log
+    // Monad Anchor Log
     await db.exec(`
         CREATE TABLE IF NOT EXISTS anchor_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

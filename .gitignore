@@ -6,8 +6,8 @@ antaria.db-shm
 antaria.db-wal
 debug_output*.txt
 verify_output.txt
-celo-config.json
 monad-config.json
 cache/
 artifacts/
 typechain-types/
+dist/
