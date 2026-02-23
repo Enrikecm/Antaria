@@ -143,9 +143,23 @@ async function loadStats() {
 // ===== Timeline =====
 async function getAnchoredEvents() {
     const latest = await provider.getBlockNumber();
-    // Use a reasonable block range to avoid RPC limits
-    const fromBlock = Math.max(0, latest - 5000);
-    return contract.queryFilter(contract.filters.Anchored(), fromBlock, 'latest');
+
+    const ranges = [10000, 5000, 1000]; // Intentar rangos cada vez más pequeños
+
+    for (const range of ranges) {
+        try {
+            const fromBlock = Math.max(0, latest - range);
+            console.log(`🔍 Buscando eventos en rango de ${range} bloques (desde ${fromBlock})...`);
+            return await contract.queryFilter(contract.filters.Anchored(), fromBlock, 'latest');
+        } catch (err) {
+            if (err.message.includes('range') || err.message.includes('too large')) {
+                console.warn(`⚠️ Rango de ${range} muy grande, intentando con el siguiente...`);
+                continue;
+            }
+            throw err;
+        }
+    }
+    throw new Error('No se pudieron recuperar los eventos ni con rangos pequeños.');
 }
 
 async function loadTimeline() {
@@ -153,6 +167,7 @@ async function loadTimeline() {
 
     try {
         const events = await getAnchoredEvents();
+        console.log(`📊 Eventos encontrados: ${events.length}`);
 
         if (events.length === 0) {
             container.innerHTML =
@@ -160,10 +175,17 @@ async function loadTimeline() {
             return;
         }
 
-        const sorted = events.slice().reverse();
+        const sorted = events.slice().sort((a, b) => {
+            const timeA = a.args && a.args.timestamp ? Number(a.args.timestamp) : 0;
+            const timeB = b.args && b.args.timestamp ? Number(b.args.timestamp) : 0;
+            return timeB - timeA; // Descendente
+        });
+
         container.innerHTML = '';
 
         for (const event of sorted) {
+            if (!event.args) continue;
+
             const anchorType = event.args.anchorType;
             const icon = ANCHOR_ICONS[anchorType] || '📌';
             const color = ANCHOR_COLORS[anchorType] || '#35D07F';
@@ -195,8 +217,9 @@ async function loadTimeline() {
         }
     } catch (err) {
         console.error('Timeline error:', err);
+        logError('Error al renderizar Timeline', err);
         container.innerHTML =
-            '<div class="timeline-empty"><p>Error cargando timeline. Intenta recargar la página.</p></div>';
+            `<div class="timeline-empty"><p>Error cargando timeline: ${err.message || 'Error desconocido'}. Intenta recargar.</p></div>`;
     }
 }
 
