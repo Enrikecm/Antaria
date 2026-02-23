@@ -8,7 +8,7 @@ dotenv.config();
 const isMainnet = process.argv.includes("--mainnet");
 
 const CELO_RPC = isMainnet
-    ? "https://forno.celo.org"
+    ? "https://rpc.ankr.com/celo"
     : "https://alfajores-forno.celo-testnet.org";
 const CELO_EXPLORER = isMainnet
     ? "https://celoscan.io"

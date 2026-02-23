@@ -55,7 +55,7 @@ export class AnchorService {
 
             if (this.network === 'celo') {
                 configFile = './celo-config.json';
-                rpcUrl = 'https://forno.celo.org';
+                rpcUrl = 'https://rpc.ankr.com/celo';
                 chainId = 42220;
             } else if (this.network === 'alfajores') {
                 configFile = './celo-config.json';

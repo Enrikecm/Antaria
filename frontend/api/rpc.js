@@ -5,7 +5,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const response = await fetch('https://forno.celo.org', {
+        const response = await fetch('https://rpc.ankr.com/celo', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(req.body),

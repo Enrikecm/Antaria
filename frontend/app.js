@@ -1,11 +1,12 @@
 // ===== Antaria — Celo Frontend =====
 
-const CONTRACT_ADDRESS = '0x0000000000000000000000000000000000000000'; // <-- UPDATE after deploy
+const CONTRACT_ADDRESS = '0x40c410F3e5701EF60be7ACC06EaeBc901337bda0';
 const EXPLORER_BASE = 'https://celoscan.io';
 const RPC_ENDPOINTS = [
     '/api/rpc',   // Vercel serverless proxy
-    '/rpc',       // Local proxy (serve-celo.js)
-    'https://forno.celo.org',   // Direct (CORS may block)
+    '/rpc',       // Local proxy
+    'https://rpc.ankr.com/celo',   // Ankr (working)
+    'https://forno.celo.org',      // Fallback
 ];
 const CHAIN_ID = 42220;
 const NETWORK_LABEL = 'Celo Mainnet';
