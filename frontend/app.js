@@ -238,4 +238,24 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-init();
+// ===== Initialization =====
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof ethers === 'undefined') {
+        const msg = 'La librería ethers.js no se cargó correctamente. Revisa tu conexión a internet o los bloqueadores de scripts.';
+        console.error(msg);
+
+        // Show in debugLog if possible
+        const container = document.getElementById('debugLog');
+        if (container) {
+            container.style.display = 'block';
+            const p = document.createElement('p');
+            p.textContent = `❌ Error Crítico: ${msg}`;
+            container.appendChild(p);
+        }
+
+        document.getElementById('networkStatus').textContent = '❌ Error de Carga';
+        return;
+    }
+
+    init();
+});
