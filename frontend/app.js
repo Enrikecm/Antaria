@@ -143,23 +143,37 @@ async function loadStats() {
 // ===== Timeline =====
 async function getAnchoredEvents() {
     const latest = await provider.getBlockNumber();
+    console.log(`🔍 Bloque actual: ${latest}`);
 
-    const ranges = [10000, 5000, 1000]; // Intentar rangos cada vez más pequeños
+    // Lista de rangos a intentar (10k, 5k, 1k, 500, 100, 10)
+    const ranges = [10000, 5000, 1000, 500, 100, 10];
 
     for (const range of ranges) {
         try {
             const fromBlock = Math.max(0, latest - range);
-            console.log(`🔍 Buscando eventos en rango de ${range} bloques (desde ${fromBlock})...`);
-            return await contract.queryFilter(contract.filters.Anchored(), fromBlock, 'latest');
+            console.log(`📡 Intentando queryFilter con rango de ${range} bloques...`);
+
+            // Usamos queryFilter. Es posible que el error esté envuelto por ethers
+            const results = await contract.queryFilter(contract.filters.Anchored(), fromBlock, 'latest');
+            console.log(`✅ ¡Éxito! Encontrados ${results.length} eventos en los últimos ${range} bloques.`);
+            return results;
         } catch (err) {
-            if (err.message.includes('range') || err.message.includes('too large')) {
-                console.warn(`⚠️ Rango de ${range} muy grande, intentando con el siguiente...`);
+            const errorText = JSON.stringify(err).toLowerCase() + (err.message || '').toLowerCase();
+            const isRangeError = errorText.includes('range') || errorText.includes('too large') || errorText.includes('limit');
+
+            if (isRangeError) {
+                console.warn(`⚠️ El RPC rechazó el rango de ${range} bloques. Probando uno más pequeño...`);
                 continue;
             }
+
+            // Si es otro tipo de error, lo reportamos y salimos
+            console.error(`❌ Error inesperado en getAnchoredEvents (${range} blocks):`, err);
             throw err;
         }
     }
-    throw new Error('No se pudieron recuperar los eventos ni con rangos pequeños.');
+
+    console.warn('⚠️ No se encontraron eventos en los rangos probados o el RPC es muy restrictivo.');
+    return []; // Devolver vacío en lugar de error para no romper la UI, solo mostrará "vacío"
 }
 
 async function loadTimeline() {
