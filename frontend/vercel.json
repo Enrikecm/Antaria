@@ -1,0 +1,9 @@
+{
+    "outputDirectory": "frontend",
+    "rewrites": [
+        {
+            "source": "/api/rpc",
+            "destination": "/api/rpc"
+        }
+    ]
+}

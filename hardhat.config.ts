@@ -15,6 +15,16 @@ const config: HardhatUserConfig = {
                 chainId: 10143,
                 accounts: [PRIVATE_KEY],
             },
+            celo: {
+                url: "https://forno.celo.org",
+                chainId: 42220,
+                accounts: [PRIVATE_KEY],
+            },
+            alfajores: {
+                url: "https://alfajores-forno.celo-testnet.org",
+                chainId: 44787,
+                accounts: [PRIVATE_KEY],
+            },
         } : {}),
     },
 };

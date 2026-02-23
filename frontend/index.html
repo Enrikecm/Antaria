@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Antaria — Transparencia On-Chain | Celo</title>
+    <meta name="description"
+        content="Antaria ancla eventos de tandas en Celo. Verifica la transparencia de cada operación en tiempo real.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css?v=1">
+</head>
+
+<body>
+    <!-- Nav -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#" class="logo">
+                <span class="logo-icon">🟢</span>
+                <span class="logo-text">Antaria</span>
+                <span class="logo-badge">Celo</span>
+            </a>
+            <div class="nav-links">
+                <a href="#stats">Dashboard</a>
+                <a href="#timeline">Timeline</a>
+                <a href="#innovation">Innovación</a>
+                <a href="#verify">Verificar</a>
+                <a href="#how-it-works">Cómo Funciona</a>
+                <a href="https://celoscan.io" target="_blank" class="nav-btn">Explorer ↗</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="container hero-content">
+            <div class="hero-badge">🟢 Construido en Celo</div>
+            <h1>Tandas <span class="gradient-text">Transparentes</span> en Celo</h1>
+            <p class="hero-subtitle">
+                Antaria transforma las tandas tradicionales en una experiencia segura,
+                transparente y rentable mediante blockchain. Ahorro colaborativo con
+                inversión inteligente, en fiat o cripto.
+            </p>
+            <div class="hero-actions">
+                <a href="#timeline" class="btn btn-primary">Ver Timeline en Vivo</a>
+                <a href="#verify" class="btn btn-outline">Verificar TX</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats -->
+    <section class="stats-section" id="stats">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">📊</div>
+                    <div class="stat-value" id="totalAnchors">—</div>
+                    <div class="stat-label">Eventos Anclados</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-value" id="totalGroups">—</div>
+                    <div class="stat-label">Tandas Registradas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">🔗</div>
+                    <div class="stat-value" id="networkStatus">Conectando...</div>
+                    <div class="stat-label">Red</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contract Info -->
+    <section class="contract-section">
+        <div class="container">
+            <div class="contract-card">
+                <h3>📄 Contrato AnchorRegistry</h3>
+                <div class="contract-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Dirección</span>
+                        <code class="detail-value" id="contractAddress">Loading...</code>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Red</span>
+                        <code class="detail-value">Celo Mainnet (Chain ID: 42220)</code>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Verificación</span>
+                        <a id="explorerLink" href="#" target="_blank" class="detail-link">Ver en CeloScan ↗</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Timeline -->
+    <section class="timeline-section" id="timeline">
+        <div class="container">
+            <h2 class="section-title">⏱️ Timeline de Eventos</h2>
+            <p class="section-subtitle">Eventos anclados on-chain en tiempo real</p>
+            <div class="timeline" id="timelineContainer">
+                <div class="timeline-loading">
+                    <div class="spinner"></div>
+                    <p>Cargando eventos de Celo...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Innovation Section -->
+    <section class="innovation-section" id="innovation">
+        <div class="container">
+            <h2 class="section-title">💡 ¿Qué hace diferente a Antaria?</h2>
+            <p class="section-subtitle">Innovaciones que transforman las tandas tradicionales</p>
+            <div class="innovation-grid">
+                <div class="innovation-card">
+                    <div class="innovation-icon">🛡️</div>
+                    <h3>Fondo de Garantía</h3>
+                    <p class="innovation-desc">Un respaldo solidario con <strong>doble función</strong>:</p>
+                    <div class="innovation-features">
+                        <div class="feature-item">
+                            <span class="feature-bullet">1</span>
+                            <div>
+                                <strong>Cobertura</strong>
+                                <p>Cubre faltas temporales de aportación, protegiendo a todo el grupo sin interrumpir la
+                                    tanda</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-bullet">2</span>
+                            <div>
+                                <strong>Rifa de Rendimientos</strong>
+                                <p>Los rendimientos se acumulan y al final se rifan: <strong>un solo ganador</strong>
+                                    entre quienes cumplieron con todas sus aportaciones, turno tras turno</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="innovation-card">
+                    <div class="innovation-icon">🌐</div>
+                    <h3>Tandas Públicas y Privadas</h3>
+                    <p class="innovation-desc">Dos modalidades para cada necesidad:</p>
+                    <div class="innovation-features">
+                        <div class="feature-item">
+                            <span class="feature-bullet cl">🔒</span>
+                            <div>
+                                <strong>Privadas</strong>
+                                <p>Crea tandas entre conocidos, como siempre se ha hecho, pero con la seguridad de
+                                    blockchain</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-bullet cl">🌍</span>
+                            <div>
+                                <strong>Públicas</strong>
+                                <p>Si tienes buena reputación, accede a tandas con personas de todo el país o del
+                                    extranjero</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="innovation-card">
+                    <div class="innovation-icon">⭐</div>
+                    <h3>Sistema de Reputación</h3>
+                    <p class="innovation-desc">Tu historial de cumplimiento te abre puertas:</p>
+                    <div class="innovation-features">
+                        <div class="feature-item">
+                            <span class="feature-bullet">📈</span>
+                            <div>
+                                <strong>Puntos de cumplimiento</strong>
+                                <p>Cada aportación puntual suma puntos a tu perfil, construyendo confianza verificable
+                                </p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-bullet">🏆</span>
+                            <div>
+                                <strong>Mejores condiciones</strong>
+                                <p>Mayor reputación = acceso a tandas públicas, mejores montos y prioridad de turno</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="innovation-card">
+                    <div class="innovation-icon">💬</div>
+                    <h3>100% vía WhatsApp</h3>
+                    <p class="innovation-desc">Sin apps extra, sin registros complicados:</p>
+                    <div class="innovation-features">
+                        <div class="feature-item">
+                            <span class="feature-bullet cl">✓</span>
+                            <div>
+                                <strong>Sin descargas</strong>
+                                <p>Crea y gestiona tandas desde WhatsApp, la app que ya usas todos los días</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-bullet cl">✓</span>
+                            <div>
+                                <strong>Fiat o Cripto</strong>
+                                <p>Participa con dinero fiat o criptomonedas, según tu preferencia</p>
+                            </div>
+                        </div>
+                        <div class="feature-item">
+                            <span class="feature-bullet cl">✓</span>
+                            <div>
+                                <strong>Recordatorios automáticos</strong>
+                                <p>Avisos de pago, confirmaciones y reportes sin intervención manual</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Verification -->
+    <section class="verify-section" id="verify">
+        <div class="container">
+            <h2 class="section-title">🔍 Verificar Transacción</h2>
+            <p class="section-subtitle">Ingresa un TX hash para verificar su existencia en Celo</p>
+            <div class="verify-card">
+                <div class="verify-input-group">
+                    <input type="text" id="txHashInput" placeholder="0x..." class="verify-input">
+                    <button id="verifyBtn" class="btn btn-primary">Verificar</button>
+                </div>
+                <div id="verifyResult" class="verify-result"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="how-section" id="how-it-works">
+        <div class="container">
+            <h2 class="section-title">⚙️ ¿Cómo Funciona?</h2>
+            <p class="section-subtitle">Arquitectura de transparencia descentralizada</p>
+            <div class="how-grid">
+                <div class="how-step">
+                    <div class="step-number">1</div>
+                    <h3>Evento en la Tanda</h3>
+                    <p>Un evento ocurre (creación, activación, pago, rifa) y el bot de WhatsApp lo registra.</p>
+                </div>
+                <div class="how-arrow">→</div>
+                <div class="how-step">
+                    <div class="step-number">2</div>
+                    <h3>Hash Seguro</h3>
+                    <p>Se genera un hash criptográfico (keccak256) del evento con un salt privado. Sin datos personales.
+                    </p>
+                </div>
+                <div class="how-arrow">→</div>
+                <div class="how-step">
+                    <div class="step-number">3</div>
+                    <h3>Anclaje en Celo</h3>
+                    <p>El hash se ancla en el contrato AnchorRegistry en Celo. Inmutable y verificable por cualquiera.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <p>🟢 Antaria — Tandas transparentes en <strong>Celo</strong></p>
+            <p class="footer-sub">Celo Buildathon 2026 | Construido con 💚 para LATAM</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/ethers@6?v=1" crossorigin="anonymous"></script>
+    <script src="app.js?v=1"></script>
+</body>
+
+</html>

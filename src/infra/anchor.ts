@@ -26,10 +26,12 @@ export class AnchorService {
     private contract: Contract | null = null;
     private salt: string;
     private enabled: boolean;
+    private network: string;
 
     constructor() {
         this.salt = process.env.ANCHOR_SALT || 'antaria-v1-default-salt';
         this.enabled = process.env.ANCHOR_ENABLED === 'true';
+        this.network = process.env.ANCHOR_NETWORK || 'monad';
 
         if (this.enabled) {
             this.initializeConnection();
@@ -46,8 +48,25 @@ export class AnchorService {
                 return;
             }
 
-            const configFile = './monad-config.json';
-            const rpcUrl = 'https://testnet-rpc.monad.xyz';
+            // Network-specific configuration
+            let configFile: string;
+            let rpcUrl: string;
+            let chainId: number | undefined;
+
+            if (this.network === 'celo') {
+                configFile = './celo-config.json';
+                rpcUrl = 'https://forno.celo.org';
+                chainId = 42220;
+            } else if (this.network === 'alfajores') {
+                configFile = './celo-config.json';
+                rpcUrl = 'https://alfajores-forno.celo-testnet.org';
+                chainId = 44787;
+            } else {
+                // Default: Monad Testnet
+                configFile = './monad-config.json';
+                rpcUrl = 'https://testnet-rpc.monad.xyz';
+                chainId = 10143;
+            }
 
             if (!fs.existsSync(configFile)) {
                 logger.warn({ configFile }, 'Config file not found. Anchor service disabled.');
@@ -57,12 +76,17 @@ export class AnchorService {
 
             const config = JSON.parse(fs.readFileSync(configFile, 'utf-8'));
 
-            this.provider = new JsonRpcProvider(rpcUrl, 10143);
+            // Override RPC from config if available
+            if (config.rpc) {
+                rpcUrl = config.rpc;
+            }
+
+            this.provider = new JsonRpcProvider(rpcUrl, chainId);
             this.wallet = new Wallet(process.env.PRIVATE_KEY, this.provider);
             this.contract = new Contract(config.contractAddress, config.abi, this.wallet);
 
-            logger.info({ address: config.contractAddress, network: 'monad-testnet', rpc: rpcUrl },
-                '🔗 AnchorService connected to AnchorRegistry on Monad');
+            logger.info({ address: config.contractAddress, network: this.network, rpc: rpcUrl },
+                `🔗 AnchorService connected to AnchorRegistry on ${this.network}`);
         } catch (err) {
             logger.error({ err }, 'Failed to initialize AnchorService');
             this.enabled = false;
@@ -148,7 +172,7 @@ export class AnchorService {
         const { groupId, refId, dataHash } = this.computeHashes(event);
 
         logger.info({ eventType: event.type, anchorType, tandaId: event.tanda_id },
-            'Anchoring event on Monad');
+            `Anchoring event on ${this.network}`);
 
         // Dry-run mode: log only, don't send TX
         if (!this.enabled || !this.contract) {
@@ -173,7 +197,7 @@ export class AnchorService {
                 txHash: receipt.hash,
                 gasUsed: receipt.gasUsed.toString(),
                 anchorType,
-            }, '✅ Anchor TX confirmed on Monad');
+            }, `✅ Anchor TX confirmed on ${this.network}`);
 
             await this.recordAnchorLog(event.id || '', anchorType, groupId, dataHash, receipt.hash, 'CONFIRMED');
         } catch (err) {

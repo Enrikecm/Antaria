@@ -7,6 +7,7 @@ antaria.db-wal
 debug_output*.txt
 verify_output.txt
 monad-config.json
+celo-config.json
 cache/
 artifacts/
 typechain-types/
