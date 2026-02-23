@@ -50,21 +50,55 @@ const ANCHOR_LABELS = {
 let provider = null;
 let contract = null;
 
+// ===== Debug Logger =====
+function logError(msg, err) {
+    console.error(msg, err);
+    const container = document.getElementById('debugLog');
+    if (container) {
+        container.style.display = 'block';
+        const p = document.createElement('p');
+        p.textContent = `❌ ${msg}: ${err.message || err}`;
+        container.appendChild(p);
+    }
+}
+
 // ===== Connect =====
 async function connectRPC() {
+    // 1. Try MetaMask first (Opción 4 elegante)
+    if (window.ethereum) {
+        try {
+            console.log('🦊 Intentando conectar con MetaMask...');
+            const p = new ethers.BrowserProvider(window.ethereum);
+            const network = await p.getNetwork();
+            if (Number(network.chainId) === CHAIN_ID) {
+                console.log('✅ Conectado vía MetaMask');
+                return p;
+            } else {
+                console.warn('⚠️ MetaMask está en otra red:', network.chainId);
+            }
+        } catch (err) {
+            console.warn('⚠️ Error con MetaMask:', err.message);
+        }
+    }
+
+    // 2. Try RPC Endpoints (Proxy Vercel + Directos)
     for (const rpc of RPC_ENDPOINTS) {
         try {
             const url = rpc.startsWith('/') ? window.location.origin + rpc : rpc;
-            console.log('🟢 Trying RPC:', url);
-            const p = new ethers.JsonRpcProvider(url, CHAIN_ID);
+            console.log('🟢 Probando RPC:', url);
+            const p = new ethers.JsonRpcProvider(url, CHAIN_ID, {
+                staticNetwork: true // Optimización para v6
+            });
             await p.getBlockNumber();
-            console.log('✅ Connected to:', url);
+            console.log('✅ Conectado a:', url);
             return p;
         } catch (err) {
-            console.warn('⚠️ RPC failed:', rpc, err.message);
+            console.warn('⚠️ Falló RPC:', rpc, err.message);
+            // Si es el proxy de Vercel y falla, loguear detalle
+            if (rpc === '/api/rpc') logError('Error en Proxy Vercel', err);
         }
     }
-    throw new Error('All RPC endpoints failed');
+    throw new Error('No se pudo conectar a ningún nodo de Celo');
 }
 
 async function init() {
