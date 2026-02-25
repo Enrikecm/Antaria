@@ -52,8 +52,8 @@ Las tandas (ROSCA) son el mecanismo de ahorro comunitario más popular en LATAM.
 ```
 Capa 1 (25%) → Muy líquida, cubre faltas primero
 Capa 2 (30%) → Semi-líquida
-Capa 3 (35%) → Genera 3% rendimiento
-Capa 4 (10%) → Genera 8% rendimiento
+Capa 3 (35%) → Inversión
+Capa 4 (10%) → Inversión
 ```
 
 Un fondo con doble función:
