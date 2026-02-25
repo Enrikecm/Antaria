@@ -57,8 +57,9 @@ Capa 4 (10%) → Inversión
 ```
 
 Un fondo con doble función:
-- **Cobertura**: Cubre faltas temporales de pago — la tanda nunca se detiene
-- **Rifa de Rendimientos**: Los rendimientos se acumulan y al final **un solo ganador** se los lleva, elegido entre quienes cumplieron con todas sus aportaciones
+- **Aportación Inicial**: Antes de iniciar la tanda, cada participante aporta una cantidad equivalente a su aportación periódica, formando el fondo colectivo.
+- **Cobertura**: Cubre automáticamente a cualquier participante que se retrase, garantizando que la tanda nunca se detenga.
+- **Rifa de Rendimientos**: El fondo genera rendimientos durante toda la tanda, y al finalizar, el rendimiento acumulado es rifado entre todos los participantes, premiando a un solo ganador entre quienes cumplieron con todas sus aportaciones.
 
 ### 🌐 Tandas Públicas y Privadas
 - **Privadas**: Tandas tradicionales entre conocidos, ahora con seguridad blockchain
