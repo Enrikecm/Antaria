@@ -70,11 +70,18 @@ export class WhatsAppService {
             for (const msg of m.messages) {
                 if (!msg.message) continue;
 
-                // CRITICAL: Ignore any message sent BY the bot account to avoid loops
-                // Especially important for "Chat with Yourself" or multi-device sync
-                if (msg.key.fromMe) {
-                    continue;
-                }
+                const remoteJid = msg.key.remoteJid || '';
+                const myJid = this.sock?.user?.id?.split(':')[0] + '@s.whatsapp.net';
+
+                // 1. Ignore if message is from myself (sent, synced or self-chat)
+                if (msg.key.fromMe) continue;
+                if (remoteJid === myJid) continue;
+
+                // 2. Ignore if message is from a group (unless explicitly allowed in future)
+                if (remoteJid.endsWith('@g.us')) continue;
+
+                // 3. Ignore status updates or broadcast
+                if (remoteJid === 'status@broadcast') continue;
 
                 if (this.messageHandler) {
                     try {
