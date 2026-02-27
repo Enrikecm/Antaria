@@ -69,7 +69,12 @@ export class WhatsAppService {
 
             for (const msg of m.messages) {
                 if (!msg.message) continue;
-                if (msg.key.fromMe) continue;
+
+                // CRITICAL: Ignore any message sent BY the bot account to avoid loops
+                // Especially important for "Chat with Yourself" or multi-device sync
+                if (msg.key.fromMe) {
+                    continue;
+                }
 
                 if (this.messageHandler) {
                     try {
