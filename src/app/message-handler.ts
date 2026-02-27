@@ -110,8 +110,7 @@ export class MessageHandler {
                 await this.wa.sendMessage(to, 'Escribe tu mensaje para el organizador:');
                 break;
             default:
-                // Returning user with unrecognized input
-                await this.wa.sendMessage(to, '🤔 No entendí. Selecciona un número:');
+                // Any other input (including greetings) results in showing the menu directly
                 await this.showMainMenu(to, userId);
                 break;
         }

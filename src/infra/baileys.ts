@@ -1,4 +1,4 @@
-import { makeWASocket, useMultiFileAuthState, DisconnectReason, WASocket } from '@whiskeysockets/baileys';
+import { makeWASocket, useMultiFileAuthState, DisconnectReason, WASocket, fetchLatestBaileysVersion } from '@whiskeysockets/baileys';
 import pino from 'pino';
 import { Boom } from '@hapi/boom';
 import path from 'path';
@@ -20,10 +20,18 @@ export class WhatsAppService {
         }
 
         const { state, saveCreds } = await useMultiFileAuthState(authPath);
+        const { version, isLatest } = await fetchLatestBaileysVersion();
+
+        logger.info(`Using Baileys v${version.join('.')} (isLatest: ${isLatest})`);
 
         this.sock = makeWASocket({
+            version,
             auth: state,
-            logger: pino({ level: 'silent' }) as any
+            logger: pino({ level: 'silent' }) as any,
+            browser: ['Desktop', 'Chrome', '114.0.5735.199'],
+            generateHighQualityLinkPreview: true,
+            markOnlineOnConnect: true,
+            syncFullHistory: false
         });
 
         this.sock.ev.on('creds.update', saveCreds);
