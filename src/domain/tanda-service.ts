@@ -60,12 +60,12 @@ export class TandaService {
         };
     }
 
-    async joinTanda(tandaId: string, userId: string, role: string = 'MEMBER'): Promise<void> {
+    async joinTanda(tandaId: string, userId: string, role: string = 'MEMBER', name?: string): Promise<void> {
         await this.ledger.recordEvent({
             type: 'ParticipantInvited',
             tanda_id: tandaId,
             user_id: userId,
-            payload: { role },
+            payload: { role, name },
             timestamp: Date.now()
         });
 
@@ -73,7 +73,7 @@ export class TandaService {
             type: 'ParticipantConfirmed',
             tanda_id: tandaId,
             user_id: userId,
-            payload: { role },
+            payload: { role, name },
             timestamp: Date.now()
         });
     }

@@ -436,52 +436,74 @@ export class MessageHandler {
                     await this.wa.sendMessage(to, '❌ Código no encontrado. Intenta de nuevo.');
                     return;
                 }
-                await this.tandaService.joinTanda(tanda.id, userId, 'MEMBER');
-                await this.sessions.clearState(userId);
+                await this.sessions.setState(userId, 'JOINING_TANDA_NAME', { tandaId: tanda.id });
+                await this.wa.sendMessage(to, `✅ *Código verificado!*\n\nTe estás uniendo a la tanda *${tanda.name}*.\n\n¿Cuál es tu *nombre completo*? (Este nombre lo verá el organizador).`);
+                return;
+            }
 
-                // Get tanda details for the join message
-                const tandaEvents = await this.ledger.getEventsByTanda(tanda.id);
+            if (state === 'JOINING_TANDA_NAME') {
+                const name = input.trim();
+                const tandaId = context.tandaId;
+
+                if (name.length < 3) {
+                    await this.wa.sendMessage(to, '⚠️ Por favor escribe tu nombre completo para que el organizador pueda identificarte.');
+                    return;
+                }
+
+                const tandaEvents = await this.ledger.getEventsByTanda(tandaId);
                 const createdEvent = tandaEvents.find(e => e.type === 'TandaCreated');
-                const cuota = createdEvent?.payload.amount || 0;
-                const participantes = createdEvent?.payload.participants || 0;
-                const periodicidad = createdEvent?.payload.periodicity || 'weekly';
+
+                if (!createdEvent) {
+                    await this.wa.sendMessage(to, '❌ Error al recuperar la información de la tanda. Intenta de nuevo.');
+                    await this.sessions.clearState(userId);
+                    return;
+                }
+
+                const tandaName = createdEvent.payload.name;
+                const cuota = createdEvent.payload.amount || 0;
+                const participantes = createdEvent.payload.participants || 0;
+                const periodicidad = createdEvent.payload.periodicity || 'weekly';
                 const periName = periodicidad === 'weekly' ? 'Semanal' : (periodicidad === 'biweekly' ? 'Quincenal' : 'Mensual');
 
-                // Count current members
+                await this.tandaService.joinTanda(tandaId, userId, 'MEMBER', name);
+                await this.sessions.clearState(userId);
+
+                // Count current members (including the one who just joined)
                 const joinEvents = tandaEvents.filter(e => e.type === 'ParticipantConfirmed');
-                const currentMembers = joinEvents.length;
+                const currentMembers = joinEvents.length + 1; // +1 for the current join
 
                 const isFull = currentMembers >= participantes;
 
                 if (isFull) {
                     // Tanda is full - notify new member
-                    await this.wa.sendMessage(to, `✅ *¡Te has unido a ${tanda.name}!*\n\n📋 *Detalles de la tanda:*\n💵 Cuota: *$${cuota}*\n📅 Periodicidad: *${periName}*\n👥 Participantes: *${currentMembers}/${participantes}* ✅ ¡Completa!\n\n🎉 *La tanda está completa.*\nEl organizador les indicará los siguientes pasos para el *depósito inicial*.`);
+                    await this.wa.sendMessage(to, `✅ *¡Bienvenido, ${name}!* Te has unido a *${tandaName}*.\n\n📋 *Detalles de la tanda:*\n💵 Cuota: *$${cuota}*\n📅 Periodicidad: *${periName}*\n👥 Participantes: *${currentMembers}/${participantes}* ✅ ¡Completa!\n\n🎉 *La tanda está completa.*\nEl organizador les indicará los siguientes pasos para el *depósito inicial*.`);
 
                     // Notify organizer that tanda is full
-                    const organizerId = createdEvent?.user_id;
+                    const organizerId = createdEvent.user_id;
                     if (organizerId) {
                         const organizerJid = organizerId.includes('@') ? organizerId : `${organizerId}@s.whatsapp.net`;
-                        await this.wa.sendMessage(organizerJid, `🎉 *¡Tu tanda "${tanda.name}" está completa!*\n\n👥 *${currentMembers}/${participantes}* participantes confirmados.\n\n📋 *Siguiente paso:*\nAhora debes solicitar el *Depósito Inicial* a todos los participantes.\n\nEl depósito por persona es: *$${cuota}*\nFondo de seguridad total: *$${cuota * participantes}*\n\nUsa la opción *8. Organizador: Validar pagos* para gestionar los comprobantes.`);
+                        await this.wa.sendMessage(organizerJid, `🎉 *¡Tu tanda "${tandaName}" está completa!*\n\n🔔 *${name}* fue el último en unirse.\n\n👥 *${currentMembers}/${participantes}* participantes confirmados.\n\n📋 *Siguiente paso:*\nAhora debes solicitar el *Depósito Inicial* a todos los participantes. Usa la opción *8* para gestionar pagos.`);
                     }
 
                     // Notify all other existing participants
+                    // Note: joinEvents doesn't include the current one yet as it was just recorded
                     const allParticipantIds = joinEvents
                         .map(e => e.user_id)
-                        .filter(id => id && id !== userId && id !== createdEvent?.user_id);
+                        .filter(id => id && id !== userId && id !== createdEvent.user_id);
 
                     for (const pId of allParticipantIds) {
                         const pJid = pId!.includes('@') ? pId! : `${pId}@s.whatsapp.net`;
-                        await this.wa.sendMessage(pJid, `🎉 *¡La tanda "${tanda.name}" está completa!*\n\n👥 *${currentMembers}/${participantes}* participantes confirmados.\n\nEl organizador les indicará los pasos para el *depósito inicial* pronto.`);
+                        await this.wa.sendMessage(pJid, `🎉 *¡La tanda "${tandaName}" está completa!*\n\n🔔 *${name}* se acaba de unir.\n\n👥 *${currentMembers}/${participantes}* participantes confirmados.\n\nEl organizador les indicará los pasos para el *depósito inicial* pronto.`);
                     }
                 } else {
                     // Tanda not full yet
-                    await this.wa.sendMessage(to, `✅ *¡Te has unido a ${tanda.name}!*\n\n📋 *Detalles de la tanda:*\n💵 Cuota: *$${cuota}*\n📅 Periodicidad: *${periName}*\n👥 Participantes: *${currentMembers}/${participantes}*\n\n⏳ Cuando la tanda esté completa, te pediremos el *depósito inicial*.`);
+                    await this.wa.sendMessage(to, `✅ *¡Bienvenido, ${name}!* Te has unido a *${tandaName}*.\n\n📋 *Detalles de la tanda:*\n💵 Cuota: *$${cuota}*\n📅 Periodicidad: *${periName}*\n👥 Participantes: *${currentMembers}/${participantes}*\n\n⏳ Cuando la tanda esté completa, te pediremos el *depósito inicial*.`);
 
                     // Notify organizer of new participant
-                    const organizerId = createdEvent?.user_id;
+                    const organizerId = createdEvent.user_id;
                     if (organizerId && organizerId !== userId) {
                         const organizerJid = organizerId.includes('@') ? organizerId : `${organizerId}@s.whatsapp.net`;
-                        await this.wa.sendMessage(organizerJid, `🔔 *Nuevo participante*\n\nAlguien se unió a tu tanda *${tanda.name}*.\n\n👥 Ahora hay *${currentMembers}/${participantes}* participantes.\n\n⏳ Faltan *${participantes - currentMembers}* para completar.`);
+                        await this.wa.sendMessage(organizerJid, `🔔 *Nuevo participante: ${name}*\n\nSe unió a tu tanda *${tandaName}*.\n\n👥 Ahora hay *${currentMembers}/${participantes}* participantes.\n\n⏳ Faltan *${participantes - currentMembers}* para completar.`);
                     }
                 }
                 return;
